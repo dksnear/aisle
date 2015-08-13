@@ -42,11 +42,30 @@ class Controller{
 	protected function view($name,$statements,$direct=false){
 		
 		$View = '\\aisle\\view\\'.ucfirst($name);
-		
+				
 		if(class_exists($View) && is_subclass_of($View,'\\aisle\\view\\IView'))
 			return (new $View())->Set($statements,$direct);
 		
 		return $this->viewm->Client($name)->Set($statements,$direct);
+	}
+	
+	// @abs 绝对地址
+	protected function redirect($url,$abs=false){
+				
+		return $this->view('Redirect',array(
+	
+			'statements'=>$url,
+			'abs'=>$abs
+		));
+	}
+	
+	protected function page($path,$ext='html'){
+	
+		return $this->view('HtmlPage',array(
+		
+			'statements'=>$path,
+			'pageExt'=>$ext
+		));
 	}
 
 }

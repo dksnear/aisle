@@ -23,6 +23,15 @@ class Program extends NSClassLoader{
 		return self::$inst;
 	}
 	
+	// 注册一个全局实例引用
+	public static function GlobalRegist($name=null){
+			
+		$name = $name ? $name : 'AISLE_PROGRAM';
+		
+		$GLOBALS[$name] = self::Get();
+		
+	}
+	
 	public static function Build($class=null){
 		
 		if(!empty(self::$inst))
@@ -117,4 +126,3 @@ class Program extends NSClassLoader{
 	}
 		
 }
-

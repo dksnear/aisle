@@ -4,7 +4,7 @@ namespace aisle\view;
 use aisle\web\Request;
 use aisle\web\Response;
 
-class Json extends Basic{
+class Jsonp extends Basic{
 		
 	protected $callback;
 		

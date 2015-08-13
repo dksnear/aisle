@@ -102,7 +102,7 @@ class AttributeResolver {
 		
 			'methodInvokedResult' => $result
 		));
-		
+				
 		return $result;
 	}
 

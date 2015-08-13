@@ -29,12 +29,12 @@ class ViewManager{
 	}
 	
 	public function Render($statements){
-		
+	
 		if(self::$RENDERED)
 			return;
 		
 		$this->Complete();
-		
+						
 		if($statements instanceof IView)
 			return $statements->Render();
 		

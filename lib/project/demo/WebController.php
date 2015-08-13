@@ -2,13 +2,24 @@
 namespace aisle\project\demo;
 
 use aisle\core\File;
+use aisle\web\Controller;
 use aisle\web\grab\Curl;
 
-class WebController{
+class WebController extends Controller{
 	
 	public function Test($name,$___attributes=array(array('test'))){
 		
 		return $name.' test!';
+	}
+	
+	public function RedirectTo($url=null){
+				
+		return $this->redirect('test.html?t=1');	
+	}
+	
+	public function TestPage(){
+		
+		return $this->page('test');
 	}
 	
 	public function Grab1(){

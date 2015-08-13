@@ -9,7 +9,7 @@ class Json extends Basic{
 		
 		$message = $statements instanceof Message ? $statements : new Message($statements);
 				
-		$out = json_encode($message->jsonSerialize());
+		$out = json_encode($message->jsonSerialize(),JSON_UNESCAPED_UNICODE);
 		
 		if($ret) return $out;
 		
