@@ -44,7 +44,7 @@ class ErrorException extends \ErrorException implements IException{
 	
 	// @viewm ViewManager
 	public function Render($viewm){
-		
+			
 		$viewm->Render(new Message($this->exMsg,false,$this->exType,$this->getSeverity()));
 	}
 	

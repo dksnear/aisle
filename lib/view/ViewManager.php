@@ -32,16 +32,19 @@ class ViewManager{
 	
 		if(self::$RENDERED)
 			return;
-		
-		$this->Complete();
 						
-		if($statements instanceof IView)
-			return $statements->Render();
+		if($statements instanceof IView){
+			
+			$statements->Render();
+			$statements->Notify($this);
+			return;
+		}
 		
 		if(!$this->default)
 			throw new ConfigException('default view can not find in config!');
 		
-		return $this->default->Render($statements);
+		$this->default->Render($statements);
+		$this->default->Notify($this);
 			
 	}
 }

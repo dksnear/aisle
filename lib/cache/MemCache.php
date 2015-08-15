@@ -1,6 +1,5 @@
 <?php
 namespace aisle\cache;
-use \aisle\core\XType;
 use \aisle\ex\CacheException;
 
 class MemCache implements ICache{

@@ -64,21 +64,13 @@ class DbCache implements ICache{
 			'expire' => $this->expire
 		);
 		
-		$changed = $this->client
-			->Trans($this->table,$params)
-			->Update(Field::Build('value')->Bind(true),Field::Build('expire')->Bind(true),Field::Build('last_update_time')->Bind(true))
-			->Where()
-			->Eq(Field::Build('name')->Bind(true))
-			->Eq(Field::Build('key')->Bind(true),'and')
-			->T()->Compile()->Run()->Get(0)->Meta();
-		
-		$changed = $changed ? $changed : $this->client
+		$this->Remove($key);
+			
+		return !!$this->client
 			->Trans($this->table,$params)
 			->Inserts(array_map(function($key){ return Field::Build($key)->Bind(true); },array_keys($params)))
 			->Compile()->Run()->Get(0)->Meta();
-				
-		return !!$changed;
-		
+					
 	}
 	
 	public function Remove($key){

@@ -29,4 +29,9 @@ class Basic implements IView{
 		print_r($statements);
 	}
 	
+	public function Notify($viewm){
+		
+		$viewm->Complete();
+	}
+	
 }

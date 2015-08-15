@@ -28,7 +28,7 @@ class ExceptionManager{
 		
 		if(!$ex instanceof IException)
 			$ex = new Exception($ex,0);
-	
+			
 		$ex->Write($this->logm);
 		$ex->Render($this->viewm);
 		
