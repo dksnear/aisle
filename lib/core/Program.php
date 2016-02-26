@@ -32,13 +32,14 @@ class Program extends NSClassLoader{
 		
 	}
 	
-	public static function Build($class=null){
+	public static function Build($class=null,$regName=null){
 		
 		if(!empty(self::$inst))
 			return self::$inst;
 	
 		self::$inst = !$class ? new self() : new $class();
 		
+		self::GlobalRegist($regName);
 		self::$inst->BuildManagers();
 		self::$inst->Run();
 		

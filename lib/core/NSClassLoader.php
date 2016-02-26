@@ -22,7 +22,7 @@ abstract class NSClassLoader extends ClassLoader{
 		
 		preg_replace_callback('/^'.$this->nsRoot.'\\\\(.*)$/',function($m) use($className){
 			
-			$path = $this->scanRoot.'/'.preg_replace('/\\\\/','/',$m[1]).'.php';
+			$path = $this->scanRoot.DIRECTORY_SEPARATOR.preg_replace('/\\\\/',DIRECTORY_SEPARATOR,$m[1]).'.php';
 
 			if(file_exists($path))	
 				$this->registClassMap[$className] = $path;

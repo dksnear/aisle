@@ -88,8 +88,11 @@ class File implements \JsonSerializable {
 
     }
 
-    public static function Delete($fileName) {
+    public static function Delete($fileName,$simulate=false) {
 
+		if($simulate)
+			return true;
+	
         if (!file_exists($fileName))
             return false;
 
@@ -103,7 +106,32 @@ class File implements \JsonSerializable {
 
     }
 	
-	public static function Copy($src,$dest){
+	public static function Copy($src,$dest,$isdir=false,$simulate=false){
+		
+		if($simulate)
+			return true;
+		
+		if($isdir){
+		
+			if(!is_dir($src))
+				return false;
+			
+			$succeed = false;
+		
+			self::Each($src,-1,function($srcFile) use($src,$dest){
+				
+				if($srcFile->type == self::$FILETYPE['DIRECTORY'])
+					return;
+	
+				$succeed = self::Copy($srcFile->fullName,$dest.str_replace($src,'',$srcFile));
+				
+				if(!$succeed) return false;
+				
+			});
+			
+			return $succeed;
+		}
+		
 		
 		if(!file_exists($src))
 			return false;
@@ -143,9 +171,13 @@ class File implements \JsonSerializable {
 	// 同步2个目录中的差异文件
 	// @src 源目录
 	// @dest 目标目录
-	// @filters 文件名排除正则列表
-	// @flags 1:非递归同步  2:双向同步 4:同步目标文件夹中不存在的文件 8:以修改时间较早的文件为源 16:关闭md5校验
-	// #return false | array('count'=>'被修改的文件数目','files'=>'被修改的文件集合')
+	// @filters 文件名排除正则列表(匹配到的文件将不做任何处理)
+	// @flags 1:非递归同步  2:双向同步(不能和减持模式同时使用) 4:同步目标文件夹中不存在的文件(增持模式) 
+	//        8:以修改时间较早的文件为源 16:关闭md5校验 
+	//        32:删除目标文件夹中存在但源文件夹不存在的文件(减持模式)(不能和增持模式同时使用)
+	//        64:模拟文件操作 不影响实际文件系统	
+	// #return false | array('count'=>'被修改的文件数目','rpath'=>'被修改文件的相对路径列表','files'=>'被修改的文件集合')
+	// -1(减持) 0(失败) 1(同步) 2(增持)
 	
 	public static function Sync2($src,$dest,$filters=array(),$flags=0){
 		
@@ -161,9 +193,20 @@ class File implements \JsonSerializable {
 				return false;
 		}
 		
-		$out = array('count'=>0,'files'=>array());
+		$out = array('count'=>0,'rpath'=>array(),'files'=>array());
 		
 		$filters = is_array($filters) ? $filters : array($filters);
+		
+		if((4 & $flags) == 4)
+			$flags = $flags^32;
+		
+		if((32 & $flags) == 32){
+			
+			$flags = $flags^2;
+			$tempd = $src;
+			$src = $dest;
+			$dest = $tempd;
+		}
 		
 		self::Each($src,(1 & $flags) == 1 ? 1 : -1,function($srcFile) use($src,$dest,$filters,$flags,& $out){
 			
@@ -171,7 +214,9 @@ class File implements \JsonSerializable {
 				return;
 			
 			$srcFile = $srcFile->fullName;
-			$destFile = $dest.str_replace($src,'',$srcFile);
+			$rpath = str_replace($src,'',$srcFile);
+			$destFile = $dest.$rpath;
+			$simulate = (64 & $flags) == 64;
 	
 			if(!empty($filters)){
 				
@@ -192,10 +237,18 @@ class File implements \JsonSerializable {
 			
 			if(!file_exists($destFile)){
 				
+				if((32 & $flags) == 32){
+							
+					$out['files'][$srcFile] = -1 * self::Delete($srcFile,$simulate); 
+					$out['count']++;
+					$out['rpath'][$rpath] = 1;
+				}
+				
 				if((4 & $flags) == 4){
 					
-					$out['files'][$destFile] = self::Copy($srcFile,$destFile);
+					$out['files'][$destFile] = 2 * self::Copy($srcFile,$destFile,false,$simulate);
 					$out['count']++;
+					$out['rpath'][$rpath] = 1;
 				}
 				
 				return;
@@ -216,8 +269,9 @@ class File implements \JsonSerializable {
 			
 			if($sut == $dut) return;
 			
-			$out['files'][$sut > $dut ? $destFile : $srcFile] = $sut > $dut ? self::Copy($srcFile,$destFile): self::Copy($destFile,$srcFile);		
+			$out['files'][$sut > $dut ? $destFile : $srcFile] = $sut > $dut ? self::Copy($srcFile,$destFile,false,$simulate): self::Copy($destFile,$srcFile,false,$simulate);		
 			$out['count']++;
+			$out['rpath'][$rpath] = 1;
 						
 		});
 		
@@ -226,6 +280,7 @@ class File implements \JsonSerializable {
 			$rout = self::Sync2($dest,$src,$filters,$flags^2);
 			$out['count'] = $out['count'] + $rout['count'];
 			$out['files'] = array_merge($out['files'],$rout['files']);
+			$out['rpath'] = array_merge($out['rpath'],$rout['rpath']);
 		}
 		
 		return $out;
@@ -236,22 +291,61 @@ class File implements \JsonSerializable {
 	// 同步多个目录中的差异文件
 	public static function Sync($dirs,$filters=array(),$flags=0){
 		
-		if(!is_array($dirs) || count($dirs) < 2)
+		if(!is_array($dirs))
 			return false;
 		
-		$out = array('count'=>0,'files'=>array());
+		$len = count($dirs);
 		
-		for($i=0;$i<count($dirs)-1;$i++){
+		if($len < 2)
+			return false;
+		
+		if($len == 2)
+			return self::Sync2($dirs[0],$dirs[1]);
+		
+		$out = array('count'=>0,'rpath'=>array(),'files'=>array());
+		
+		for($i = 1; $i < $len; $i ++){
 			
-			$cur_out = self::Sync2($dirs[$i],$dirs[$i+1],$filters,$flags);
+			$cur_out = self::Sync2($dirs[0],$dirs[$i],$filters,$flags);
 			if(empty($cur_out))
 				continue;
 			$out['count'] = $out['count'] + $cur_out['count'];
 			$out['files'] = array_merge($out['files'],$cur_out['files']);
+			$out['rpath'] = array_merge($out['rpath'],$cur_out['rpath']);
 		}
 		
-		return $out;
+		$src = self::FixName($dirs[0]);
+		$simulate = (64 & $flags) == 64;
+
+		for($i = 1; $i < $len; $i ++){
+			
+			$dest = self::FixName($dirs[$i]);
+			
+			foreach($out['rpath'] as $k=>$v){
+				
+				$srcFile = $src.$k;
+				$destFile = $dest.$k;
+				
+				if(!file_exists($destFile)){
+					
+					if((4 & $flags) == 4){
+						
+						$out['files'][$destFile] = 2 * self::Copy($srcFile,$destFile,false,$simulate);
+						$out['count']++;
+					}
+					
+					continue;
+				}
+				
+				if((16 & $flags) != 16 && md5_file($srcFile) == md5_file($destFile))
+					continue;
+				
+				$out['files'][$destFile] = self::Copy($srcFile,$destFile,false,$simulate);
+				$out['count']++;
+			}
+		}
 		
+		return $out;	
 	}
 	
 	public static function FixName($path){

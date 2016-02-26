@@ -44,7 +44,6 @@ abstract class ClassLoader{
 		
 		if(isset($this->registClassMap[$className])){
 			
-			//require_once($this->registClassMap[$className]);
 			require($this->registClassMap[$className]);
 			$this->loadedClassMap[$className] = $className;
 			return $className;
@@ -76,14 +75,14 @@ abstract class ClassLoader{
 			
 			$level+=1;
 			$hDir = opendir($currentFileName);
-			while($hFile=readdir($hDir)){
+			while($hFile = readdir($hDir)){
 				
 				if($finded) break;
 				
 				if($hFile=='.'||$hFile=='..')
 					continue;
 				
-				$this->fileScan($currentFileName.'/'.$hFile,$targetFileName,$level,$finded);
+				$this->fileScan($currentFileName.DIRECTORY_SEPARATOR.$hFile,$targetFileName,$level,$finded);
 				
 			}
 			closedir($hDir);	

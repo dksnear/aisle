@@ -1,8 +1,7 @@
+
 /********************
 
 	Aisle System Table CREATOR
-	
-	G:/a-projects/_local-servers/server-2/lab/$doc/mysql/all.sql
 
 *********************/
 

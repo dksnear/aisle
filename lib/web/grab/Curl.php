@@ -4,9 +4,9 @@ use aisle\ex\WebException;
 
 class Curl{
 	
-	public static function Get($url,$args=null,$opts=null,$trace_agent=false){
-		
-		$args = empty($args) ? '' : '?'.implode('&',array_map(function($k) use ($args){ return $k.'='.$args[$k]; },array_keys($args)));
+	public static function Get($url,$args=array(),$opts=array(),$trace_agent=false){
+			
+		$args = is_array($args) ? http_build_query($args) : $args;
 		
 		$url = $args ? $url.$args : $url;
 		
@@ -33,13 +33,12 @@ class Curl{
 		->Result();
 	}
 	
-	public static function Post($url,$args=null,$opts=null,$trace_agent=false){
-		
-		$args = $args ? $args : array();
-		$opts = $opts ? $opts : array();
-		
+	public static function Post($url,$args=array(),$opts=array(),$trace_agent=false){
+	
+		$args = is_array($args) ? http_build_query($args) : $args;
+	
 		$curl = new self();
-		
+	
 		$trace_agent &&	$curl->Opts(array(
 		
 			CURLOPT_PROXY => '127.0.0.1:8888', //设置代理服务器 
