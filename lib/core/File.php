@@ -345,6 +345,9 @@ class File implements \JsonSerializable {
 			}
 		}
 		
+		if($simulate) 
+			$out['count'] = $out['count']/2;
+		
 		return $out;	
 	}
 	
