@@ -1,0 +1,126 @@
+{
+	<!-- 时区 -->
+	"timezone" : "PRC",
+	<!-- 请求路由 -->
+	"routers" : [{
+		"controller": ["\\aisle\\proj\\demo\\%s","AISLE_CONTROLLER"],
+		"action" : ["%s","AISLE_ACTION"],
+		"order" : 1
+	},{
+		"controller": ["\\aisle\\proj\\demo\\Core"],
+		"action" : ["%s","AISLE_ACTION"],
+		"order" : 2
+	},{
+		"controller": ["\\aisle\\proj\\demo\\Core"],
+		"action" : ["Welcome"],
+		"order" : 3
+	}],
+	<!-- 默认数据库配置 -->
+	"db" : "default",
+	<!-- 默认视图配置 -->
+	"view" : "json",
+	<!-- 默认缓存配置 -->
+	"cache" : "memcache",
+	<!-- 默认日志配置 -->
+	"logs" :["file","db"],
+	<!-- 数据库配置列表 -->
+	"db-client":{
+	
+		"default":{		
+		
+			"driver" : "mysql",
+			"dsn" : {
+				"dbname" : "db11",
+				"username" : "root",
+				"password" : 123456
+			}
+		}
+	},
+	<!-- 缓存配置列表 -->
+	"cache-client":{
+
+		"memcache" : {		
+			"driver":"memcache",
+			"host":"127.0.0.1",
+			"port":"11211",
+			"expire": 0
+		},
+		"redis" : {
+			"driver":"redis",
+			"host":"127.0.0.1",
+			"port":6379,
+			"expire":0
+		},
+		"file" : {	
+			"driver":"file",
+			"name" : "AISLE_SYS_FILE_CACHE",
+			"dir":"./$source/cache",
+			"expire": 0
+		},		
+		"db" : {
+			"driver":"db",
+			"name" : "AISLE_SYS_DB_CACHE",
+			"db-client" : "default",
+			"table" : "aisle_sys_cache",
+			"expire" : 180		
+		}
+	},
+	<!-- 日志配置列表 -->
+	"log-client" : {
+	
+		"file" : {
+			"driver" : "file",
+			"path" : "./$source/log/AISLE_SYS_FILE_LOG"
+		},
+		"db" : {
+			"driver" : "db",
+			"db-client" : "default",
+			"table" : "aisle_sys_ex_log"
+		}
+	},
+	<!-- 视图配置列表 -->
+	"view-client" : {
+
+		"json" : {
+			"driver" : "json"
+		},
+		"jsonp" : {
+			"driver" : "jsonp",
+			<!-- 请求中回调js方法名的参数名 -->
+			"callback" : "callback"
+		},
+		"htmltable" : {
+			"driver" : "htmltable"
+		}
+	},
+	<!-- 类别名注册列表 -->
+	"class-map" : {
+	
+		<!-- 注册组 -->
+		"db-driver" : {
+			<!-- 别名: 类名 -->
+			"mysql" : "\\aisle\\db\\driver\\MysqlClient"
+		},
+		"cache-driver" : {
+		
+			"memcache" : "\\aisle\\cache\\MemCache",
+			"redis" : "\\aisle\\cache\\RedisCache",
+			"file" : "\\aisle\\cache\\FileCache",
+			"db" : "\\aisle\\cache\\DbCache"	
+		},
+		"log-driver":{
+		
+			"file" : "\\aisle\\log\\FileLog",
+			"db" : "\\aisle\\log\\DbLog"
+		},
+		"view-driver":{
+			"json" : "\\aisle\\view\\Json",
+			"jsonp" : "\\aisle\\view\\Jsonp",
+			"htmltable" : "\\aisle\\view\\HtmlTable"
+		},
+		"attribute":{
+		
+			<!-- "test" : "\\aisle\\proj\\demo\\attr\\TestAttribute" -->
+		}	
+	}
+}
