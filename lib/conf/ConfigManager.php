@@ -11,9 +11,9 @@ class ConfigManager{
 	
 	protected $statements = array();
 	
-	public function __construct(){
-		
-		foreach(func_get_args() as $path){
+	public function __construct($paths){
+				
+		foreach($paths as $path){
 			
 			$path = is_array($path)? $path : array($path);
 			$cover = isset($path[1]) ? $path[1] : false;

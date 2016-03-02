@@ -16,6 +16,7 @@ class Cond{
 		$this->statements = array();
 	}
 	
+	// ignoreLo: ignore logic operator
 	public function And_($ignoreLo=false){
 		
 		$cond = new self($this,$this->table);

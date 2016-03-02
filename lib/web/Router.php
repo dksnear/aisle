@@ -5,7 +5,7 @@ use aisle\attr\AttributeResolver;
 
 class Router{
 
-	public static function Resolve($routers,$managers){
+	public static function Resolve($routers,$managers,$request=null){
 			
 		(count($routers) > 1) && usort($routers,function($left,$right){
 				
@@ -17,6 +17,9 @@ class Router{
 		$res = null;
 				
 		foreach($routers as $router){
+			
+			if(!empty($request))
+				$router->SetRequest($request);
 					
 			$res = $router->Match();
 			
@@ -66,6 +69,11 @@ class Router{
 		return property_exists($this,$name) ?  $this->$name : null;
 	}
 	
+	public function SetRequest($request){
+		
+		$this->request = $request;
+		$this->params = $request->Param();
+	}
 	
 	public function Match(){
 		
@@ -99,7 +107,7 @@ class Router{
 			
 			$class[$i] = $this->request->Param($key);
 			
-			if(is_null($class[$i])) return false;
+			if(empty($class[$i])) return false;
 			
 			unset($this->params[$key]);
 					
@@ -107,8 +115,10 @@ class Router{
 		
 		$class = call_user_func_array('sprintf',$class).'Controller';
 	
-		return class_exists($class) ? $class : false;
+		if(!class_exists($class))
+			throw new RoutingFailedException();
 		
+		return $class;
 	}
 	
 	protected function parseAction($class){

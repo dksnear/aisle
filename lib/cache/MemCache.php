@@ -14,6 +14,9 @@ class MemCache implements ICache{
 		
 	public function __destruct(){
 		
+		if(!class_exists('\MemCache',false))
+			return;
+		
 		$this->client->close();		
 	}
 	

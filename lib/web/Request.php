@@ -1,11 +1,12 @@
 <?php
 namespace aisle\web;
-
 use aisle\core\XType;
 
 class Request{
 	
 	protected static $IS_SESSION_START = false;
+	
+	protected static $CONSOLE_PARAMS = null;
 	
 	public static function SessionStart($limit=null,$expire=null){
 		
@@ -19,11 +20,40 @@ class Request{
 		self::$IS_SESSION_START = true;
 	}
 	
+	public static function ParseParam($pstr,$decoder = null){
+		
+		$pstr = preg_replace('/^\?/','',$pstr);
+		$params = array();
+		
+		preg_replace_callback('/(?:^|&)(.*?)=(.*?)(?=&|$)/',function($match) use(& $params,$decoder) {
+			
+			$k = $match[1];
+			$v = $match[2];
+			
+			if(is_callable($decoder)){
+				
+				$k = $decoder($k);
+				$v = $decoder($v);
+			}
+				
+			$params[$k] = $v;  
+			
+		},$pstr);
+		
+		return $params;
+		
+	}
+	
+	public static function IsConsole(){
+		
+		return isset($_SERVER['SESSIONNAME']) && strtolower($_SERVER['SESSIONNAME']) == 'console';
+	}
+	
 	protected $data;
 	
 	public function __construct($data=null){
-		
-		$this->data = $data ? $data : $_REQUEST;
+			
+		$this->data = $data ? $data : $this->getDefaultData();
 	}
 	
 	public function Param($name = null){
@@ -97,5 +127,25 @@ class Request{
 		if(!$name) return $arr;
 		
 		return isset($arr[$name]) ? $arr[$name] : null;
+	}
+	
+	protected function getDefaultData(){
+		
+		if(!self::IsConsole())
+			return $_REQUEST;
+		
+		if(!empty(self::$CONSOLE_PARAMS))
+			return self::$CONSOLE_PARAMS;
+		
+		if($GLOBALS['argc'] < 2)
+			return array();
+		
+		self::$CONSOLE_PARAMS = self::ParseParam($GLOBALS['argv'][1],function($str){
+			
+			return XType::Build($str)->Unescape()->Meta();
+		});
+						
+		return self::$CONSOLE_PARAMS;
+		
 	}
 }

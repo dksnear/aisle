@@ -6,7 +6,7 @@ abstract class NSClassLoader extends ClassLoader{
 	
 	protected function preLoad(){
 	
-		$this->appendLoaded($this->nsRoot.'\ClassLoader');		
+		$this->appendLoaded($this->nsRoot.'\\ClassLoader');		
 	}
 	
 	protected function load($className){
@@ -19,16 +19,22 @@ abstract class NSClassLoader extends ClassLoader{
 		
 		if(!is_null($path))
 			return $this->registClassMap[$className] = $path;
-		
-		preg_replace_callback('/^'.$this->nsRoot.'\\\\(.*)$/',function($m) use($className){
 			
-			$path = $this->scanRoot.DIRECTORY_SEPARATOR.preg_replace('/\\\\/',DIRECTORY_SEPARATOR,$m[1]).'.php';
+		$this->scanRoot = is_array($this->scanRoot) ? $this->scanRoot : array($this->scanRoot);
 
-			if(file_exists($path))	
+		foreach($this->scanRoot as $scanRoot){
+			
+			if(!is_dir($scanRoot))
+				continue;
+			
+			$path = preg_replace('/^'.$this->nsRoot.'\\\\/','',$className);
+			$path = $scanRoot.DIRECTORY_SEPARATOR.preg_replace('/\\\\/',DIRECTORY_SEPARATOR,$path).'.php';
+			if(file_exists($path)){	
 				$this->registClassMap[$className] = $path;
-							
-		},$className);	
-		
+				break;
+			}
+		}
+
 	}
 	
 	protected function appendLoaded($className,$path=null){

@@ -15,7 +15,6 @@ File::Each('./',-1,function($file){
 
 **************/
 
-// php5.3 不支持JsonSerializable
 class File implements \JsonSerializable {
 
     // 文件类型定义
@@ -195,7 +194,7 @@ class File implements \JsonSerializable {
 		
 		$out = array('count'=>0,'rpath'=>array(),'files'=>array());
 		
-		$filters = is_array($filters) ? $filters : array($filters);
+		$filters = empty($filters) ? $filters : (is_array($filters) ? $filters : array($filters));
 		
 		if((4 & $flags) == 4)
 			$flags = $flags^32;
@@ -325,6 +324,9 @@ class File implements \JsonSerializable {
 				
 				$srcFile = $src.$k;
 				$destFile = $dest.$k;
+				
+				if(!file_exists($srcFile))
+					continue;
 				
 				if(!file_exists($destFile)){
 					

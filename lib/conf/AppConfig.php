@@ -81,7 +81,8 @@ class AppConfig {
 		if(isset($statements['timezone']) && $statements['timezone']){
 			
 			$this->timezone = $statements['timezone'];
-			date_default_timezone_set($this->timezone);
+			// date_default_timezone_set($this->timezone);
+			ini_set('date.timezone',$this->timezone); 
 		}
 		
 		if(isset($statements['class-map']) && $statements['class-map']){

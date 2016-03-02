@@ -8,11 +8,13 @@ class ExceptionManager{
 	
 	protected $viewm;
 	
-	public function __construct($logm,$viewm){
+	protected $program;
+	
+	public function __construct($logm,$viewm,$program){
 		
 		$this->logm = $logm;
 		$this->viewm = $viewm;
-		
+		$this->program = $program;
 		$this->Regist();
 	}
 	
@@ -32,7 +34,8 @@ class ExceptionManager{
 		$ex->Write($this->logm);
 		$ex->Render($this->viewm);
 		
-		Trace::Eject();
+		if($this->program->trace)
+			Trace::Eject();
 		
 		die();
 	}

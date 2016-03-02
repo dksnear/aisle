@@ -207,7 +207,7 @@ class XString extends XType{
 		
 		for ($i =0;$i <strLen($this->meta);$i++) {
 			if (ord($this->meta[$i]) >=127) {
-				//$temp =bin2hex(iconv('gb2312','ucs-2',substr($this->meta,$i,2)));
+
 				$token.='%u'.bin2hex(iconv('gb2312','ucs-2',substr($this->meta,$i,2)));
 				$i++;
 			} else {

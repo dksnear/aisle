@@ -4,7 +4,7 @@ namespace aisle\view;
 class HtmlTable extends Basic{
 	
 	public function Render($statements=null,$ret=false){
-		
+				
 		$statements = parent::Render($statements,true);
 
 		if($statements instanceof Message)

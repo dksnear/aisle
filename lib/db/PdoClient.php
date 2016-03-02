@@ -1,6 +1,7 @@
 <?php
 namespace aisle\db;
 use aisle\core\XType;
+use aisle\ex\Exception;
 use aisle\ex\DbException;
 
 abstract class PdoClient implements IDbClient{
@@ -162,7 +163,10 @@ abstract class PdoClient implements IDbClient{
 	protected function execute($sql,$params=null,$allows=null,$mode='assoc'){
 		
 		try{
-						
+			
+			if(!$this->connected)
+				throw new Exception('sql client can not connected!');
+		
 			$query = $this->pdo->prepare($sql,array(\PDO::ATTR_CURSOR=>\PDO::CURSOR_FWDONLY));
 			
 			if(!empty($params)){

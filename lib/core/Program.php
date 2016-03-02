@@ -30,29 +30,39 @@ class Program extends NSClassLoader{
 		
 		$GLOBALS[$name] = self::Get();
 		
+		return $GLOBALS[$name];
+		
 	}
 	
-	public static function Build($class=null,$regName=null){
+	public static function Build($class=null,$regName=null,$trace=false){
 		
 		if(!empty(self::$inst))
 			return self::$inst;
 	
-		self::$inst = !$class ? new self() : new $class();
+		self::$inst = !$class ? new self($trace) : new $class();		
+		return self::GlobalRegist($regName);
+	}
+	
+	public static function Trace($class=null,$regName=null){
 		
-		self::GlobalRegist($regName);
-		self::$inst->BuildManagers();
-		self::$inst->Run();
-		
-		return self::$inst;
+		return self::Build($class,$regName,true);
 	}
 	
 	protected static $inst;
 	
 	protected $managers;
 	
-	protected function __construct(){
+	protected $scanRoot = array('../../lib','../..');
+	
+	protected $trace = false;
+	
+	protected function __construct($trace=false){
 		
 		parent::init();
+		$this->trace = $trace;
+		if($this->trace)
+			Trace::Begin('aisle program');
+		$this->buildManagers();
 		
 	}
 	
@@ -65,17 +75,21 @@ class Program extends NSClassLoader{
 		
 		return null;
 	}
-	
-	public function Trace(){
+			
+	public function Run(){
 		
-		var_dump($_REQUEST);
-		$this->confm && var_dump($this->confm->Statements());
+		// var_dump($_REQUEST);
+		// $this->confm && var_dump($this->confm->Statements());
 		
-		return $this;
+		$this->viewm->Render(Router::Resolve($this->confm->Config()->GetRouters(),$this->managers));
+		
+		if($this->trace)
+			Trace::Eject();
+		
 		
 	}
 	
-	public function BuildManagers(){
+	protected function buildManagers(){
 		
 		$this->managers['confm'] = $this->createConfigManager();
 		$this->managers['cachem'] = $this->createCacheManager();
@@ -83,11 +97,6 @@ class Program extends NSClassLoader{
 		$this->managers['dbm'] = $this->createDbClientManager();
 		$this->managers['viewm'] = $this->createViewManager();
 		$this->managers['exm'] = $this->createExceptionManager();
-	}
-	
-	public function Run(){
-		
-		$this->viewm->Render(Router::Resolve($this->confm->Config()->GetRouters(),$this->managers));
 	}
 		
 	// close fileScan
@@ -98,7 +107,23 @@ class Program extends NSClassLoader{
 	
 	protected function createConfigManager(){
 		
-		return new ConfigManager('./$source/config.acj');
+		$paths = array();
+		
+		$this->scanRoot = is_array($this->scanRoot) ? $this->scanRoot : array($this->scanRoot);
+		
+		foreach($this->scanRoot as $scanRoot){
+			
+			if(!file_exists($scanRoot.'/$source/config.acj'))
+				continue;
+			$paths []= $scanRoot.'/$source/config.acj';
+		}
+		
+		if(file_exists('./$source/config.acj'))
+			$paths []= './$source/config.acj';
+		if(file_exists('./$source/config-cover.acj'))
+			$paths []= array('./$source/config-cover.acj',true);
+		
+		return new ConfigManager($paths);
 	}
 	
 	protected function createCacheManager(){
@@ -123,7 +148,7 @@ class Program extends NSClassLoader{
 	
 	protected function createExceptionManager(){
 		
-		return new ExceptionManager($this->logm,$this->viewm);
+		return new ExceptionManager($this->logm,$this->viewm,$this);
 	}
 		
 }

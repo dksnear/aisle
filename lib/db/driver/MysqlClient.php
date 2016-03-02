@@ -130,8 +130,6 @@ class MysqlClient extends \aisle\db\PdoClient{
 		
 	public function Compile($trace=false){
 		
-		$trace = $trace ? new Trace('mysql client compile trace') : false;
-		
 		$this->queryStatements = array();
 				
 		foreach($this->queryTables as $table)
@@ -141,7 +139,6 @@ class MysqlClient extends \aisle\db\PdoClient{
 			
 			Trace::WriteLine($this->queryStatements);
 			Trace::WriteLine($this->queryParams);
-			$trace->End();
 		}
 		
 		return $this;

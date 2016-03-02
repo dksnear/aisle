@@ -3,24 +3,32 @@
 	"timezone" : "PRC",
 	<!-- 请求路由 -->
 	"routers" : [{
-		"controller": ["\\aisle\\project\\demo\\%s","AISLE_CONTROLLER"],
+		"controller": ["\\aisle\\proj\\%s\\%s\\%s","AISLE_PROJECT","AISLE_MODULE","AISLE_CONTROLLER"],
 		"action" : ["%s","AISLE_ACTION"],
 		"order" : 1
 	},{
-		"controller": ["\\aisle\\project\\demo\\Core"],
+		"controller": ["\\aisle\\proj\\%s\\%s","AISLE_PROJECT","AISLE_CONTROLLER"],
 		"action" : ["%s","AISLE_ACTION"],
 		"order" : 2
 	},{
-		"controller": ["\\aisle\\project\\demo\\Core"],
-		"action" : ["Welcome"],
+		"controller": ["\\aisle\\proj\\demo\\%s","AISLE_CONTROLLER"],
+		"action" : ["%s","AISLE_ACTION"],
 		"order" : 3
+	},{
+		"controller": ["\\aisle\\proj\\demo\\Core"],
+		"action" : ["%s","AISLE_ACTION"],
+		"order" : 4
+	},{
+		"controller": ["\\aisle\\proj\\demo\\Core"],
+		"action" : ["Welcome"],
+		"order" : 5
 	}],
 	<!-- 默认数据库配置 -->
 	"db" : "default",
 	<!-- 默认视图配置 -->
 	"view" : "json",
 	<!-- 默认缓存配置 -->
-	"cache" : "memcache",
+	"cache" : "file",
 	<!-- 默认日志配置 -->
 	"logs" :["file","db"],
 	<!-- 数据库配置列表 -->
@@ -91,6 +99,9 @@
 		},
 		"htmltable" : {
 			"driver" : "htmltable"
+		},
+		"htmllist" : {
+			"driver" : "htmllist"
 		}
 	},
 	<!-- 类别名注册列表 -->
@@ -116,7 +127,8 @@
 		"view-driver":{
 			"json" : "\\aisle\\view\\Json",
 			"jsonp" : "\\aisle\\view\\Jsonp",
-			"htmltable" : "\\aisle\\view\\HtmlTable"
+			"htmltable" : "\\aisle\\view\\HtmlTable",
+			"htmllist" : "\\aisle\\view\\HtmlList"
 		},
 		"extension-config-driver":{
 		
@@ -124,7 +136,7 @@
 		},
 		"attribute":{
 		
-			<!-- "test" : "\\aisle\\project\\demo\\attr\\TestAttribute" -->
+			<!-- "test" : "\\aisle\\proj\\demo\\attr\\TestAttribute" -->
 		}	
 	}
 }

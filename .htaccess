@@ -2,14 +2,10 @@
 <IfModule mod_rewrite.c>
 RewriteEngine on
 
-# RewriteRule ^/?(\w+)$ lib/$1Program.php [QSA,L]
-# RewriteRule ^/?(\w+)/(\w+)$ lib/$1Program.php?AISLE_ACTION=$2 [QSA,L]
-# RewriteRule ^/?(\w+)/(\w+)/(\w+)$ lib/$1Program.php?AISLE_CONTROLLER=$2&AISLE_ACTION=$3 [QSA,L]
-# RewriteRule ^/?(\w+)/(\w+)/(\w+)/(\w+)$ lib/$1Program.php?AISLE_Module=$2&AISLE_CONTROLLER=$3&AISLE_ACTION=$4 [QSA,L]
-RewriteRule ^/?(\w+)$ lib/project/$1/WebProgram.php [QSA,L]
-RewriteRule ^/?(\w+)/(\w+)$ lib/project/$1/WebProgram.php?AISLE_ACTION=$2 [QSA,L]
-RewriteRule ^/?(\w+)/(\w+)/(\w+)$ lib/project/$1/WebProgram.php?AISLE_CONTROLLER=$2&AISLE_ACTION=$3 [QSA,L]
-RewriteRule ^/?(\w+)/(\w+)/(\w+)/(\w+)$ lib/project/$1/WebProgram.php?AISLE_Module=$2&AISLE_CONTROLLER=$3&AISLE_ACTION=$4 [QSA,L]
-# RewriteRule ^(.*)$ lib/WebProgram.php [QSA,L]
+RewriteRule ^/?$ proj/demo/AppProgram.php [QSA,L]
+RewriteRule ^/?(\w+)$ proj/$1/AppProgram.php?AISLE_PROJECT=$1 [QSA,L]
+RewriteRule ^/?(\w+)/(\w+)$ proj/$1/AppProgram.php?AISLE_PROJECT=$1&AISLE_ACTION=$2 [QSA,L]
+RewriteRule ^/?(\w+)/(\w+)/(\w+)$ proj/$1/AppProgram.php?AISLE_PROJECT=$1&AISLE_CONTROLLER=$2&AISLE_ACTION=$3 [QSA,L]
+RewriteRule ^/?(\w+)/(\w+)/(\w+)/(\w+)$ proj/$1/AppProgram.php?AISLE_PROJECT=$1&AISLE_MODULE=$2&AISLE_CONTROLLER=$3&AISLE_ACTION=$4 [QSA,L]
 
 </IfModule>
