@@ -1,9 +1,0 @@
-
----- path G:/a-projects/aisle/detector/doc/mysql/create_db.sql
-
-SET NAMES UTF8;
-
-DROP DATABASE IF EXISTS `AISLE_DETECTOR_DB`;
-CREATE DATABASE `AISLE_DETECTOR_DB` CHARACTER SET UTF8;
-
--- USE `AISLE_DETECTOR_DB`;
