@@ -7,15 +7,35 @@ abstract class NSClassLoader extends ClassLoader{
 	// 根命名空间
 	protected $nsRoot = 'aisle';
 	
-	protected function load($className){
+	protected function __construct($pclsMap=null){
+		
+		parent::__construct();
+		$this->preRegist($pclsMap);
+	}
 	
+	protected function preRegist($pclsMap){
+		
+		if(empty($pclsMap)) 
+			return $this;
+		
+		foreach($pclsMap as $clsn=>$path)
+			$this->appendRegist($clsn,$path);
+		
+		return $this;
+	}
+	
+	protected function load($className){
+			
 		$this->appendRegist($className);
 		parent::load($className);
 	}
 		
 	protected function appendRegist($className,$path=null){
-		
-		if(!empty($path))
+				
+		if(isset($this->registClassMap[$className]))
+			return $this->registClassMap[$className] = file_exists($path) ? $path : $this->registClassMap[$className];	
+				
+		if(file_exists($path))
 			return $this->registClassMap[$className] = $path;
 		
 		foreach($this->scanRoot as $scanRoot){

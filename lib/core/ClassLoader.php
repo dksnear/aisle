@@ -12,12 +12,12 @@ abstract class ClassLoader{
 	// 扫描器根目录
 	protected $scanRoot = array('.');
 	
-	public function __construct(){
+	protected function __construct(){
 
 		$this->scanRoot = is_array($this->scanRoot) ? $this->scanRoot : array($this->scanRoot);
 		$this->registClassMap = array();
 		$this->loadedClassMap = array();
-		$this->regist();
+		$this->splRegist();
 	}
 	
 	public function __get($name){
@@ -27,15 +27,14 @@ abstract class ClassLoader{
 
 	// 加载器
 	protected function load($className){
-				
+	
 		if(isset($this->loadedClassMap[$className]))
 			return $this->loadedClassMap[$className];
 		
 		if(isset($this->registClassMap[$className])){
 			
 			require($this->registClassMap[$className]);
-			$this->loadedClassMap[$className] = $className;
-			return $className;
+			return $this->loadedClassMap[$className] = $className;
 		}
 		
 		$finded = false;
@@ -48,7 +47,7 @@ abstract class ClassLoader{
 	}
 	
 	// 加载器注册
-	protected function regist(){
+	protected function splRegist(){
 		
 		spl_autoload_register(array($this,'load'));
 				

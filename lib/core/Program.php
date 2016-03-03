@@ -34,18 +34,23 @@ class Program extends NSClassLoader{
 		
 	}
 	
-	public static function Build($class=null,$regName=null,$trace=false){
+	public static function Build($class=null,$regName=null,$pclsMap=null,$trace=false){
 		
 		if(!empty(self::$inst))
 			return self::$inst;
 	
-		self::$inst = !$class ? new self($trace) : new $class();		
+		self::$inst = !$class ? new self($pclsMap,$trace) : new $class($pclsMap,$trace);		
 		return self::GlobalRegist($regName);
 	}
 	
-	public static function Trace($class=null,$regName=null){
+	public static function BuildWithTrace($class=null,$regName=null,$pclsMap=null){
 		
-		return self::Build($class,$regName,true);
+		return self::Build($class,$regName,$pclsMap,true);
+	}
+	
+	public static function BuildWithPreLoad($pclsMap=null,$class=null,$regName=null,$trace=false){
+		
+		return self::Build($class,$regName,$pclsMap,$trace);
 	}
 	
 	protected static $inst;
@@ -56,9 +61,9 @@ class Program extends NSClassLoader{
 	
 	protected $trace = false;
 	
-	public function __construct($trace=false){
+	protected function __construct($pclsMap=null,$trace=false){
 		
-		parent::__construct();
+		parent::__construct($pclsMap);
 		$this->trace = $trace;
 		if($this->trace)
 			Trace::Begin('aisle program');
