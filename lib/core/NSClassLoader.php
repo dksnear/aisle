@@ -4,10 +4,8 @@ require('ClassLoader.php');
 
 abstract class NSClassLoader extends ClassLoader{
 	
-	protected function preLoad(){
-	
-		$this->appendLoaded($this->nsRoot.'\\ClassLoader');		
-	}
+	// 根命名空间
+	protected $nsRoot = 'aisle';
 	
 	protected function load($className){
 	
@@ -17,11 +15,9 @@ abstract class NSClassLoader extends ClassLoader{
 		
 	protected function appendRegist($className,$path=null){
 		
-		if(!is_null($path))
+		if(!empty($path))
 			return $this->registClassMap[$className] = $path;
-			
-		$this->scanRoot = is_array($this->scanRoot) ? $this->scanRoot : array($this->scanRoot);
-
+		
 		foreach($this->scanRoot as $scanRoot){
 			
 			if(!is_dir($scanRoot))
@@ -39,7 +35,7 @@ abstract class NSClassLoader extends ClassLoader{
 	
 	protected function appendLoaded($className,$path=null){
 		
-		if(!class_exists($className))
+		if(!class_exists($className,false))
 			return false;
 		
 		$this->appendRegist($className,$path);

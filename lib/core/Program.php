@@ -56,9 +56,9 @@ class Program extends NSClassLoader{
 	
 	protected $trace = false;
 	
-	protected function __construct($trace=false){
+	public function __construct($trace=false){
 		
-		parent::init();
+		parent::__construct();
 		$this->trace = $trace;
 		if($this->trace)
 			Trace::Begin('aisle program');
@@ -108,8 +108,6 @@ class Program extends NSClassLoader{
 	protected function createConfigManager(){
 		
 		$paths = array();
-		
-		$this->scanRoot = is_array($this->scanRoot) ? $this->scanRoot : array($this->scanRoot);
 		
 		foreach($this->scanRoot as $scanRoot){
 			
