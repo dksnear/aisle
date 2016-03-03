@@ -10,50 +10,44 @@ abstract class ClassLoader{
 	protected $loadedClassMap;
 	
 	// 扫描器根目录
-	protected $scanRoot = '.';
+	protected $scanRoot = array('.');
 	
-	// 根命名空间
-	protected $nsRoot = 'aisle';
+	protected function __construct(){
+
+		$this->scanRoot = is_array($this->scanRoot) ? $this->scanRoot : array($this->scanRoot);
+		$this->registClassMap = array();
+		$this->loadedClassMap = array();
+		$this->splRegist();
+	}
 	
 	public function __get($name){
 		
 		return isset($this->$name) ? $this->$name : null;
 	}
 
-	// 初始化类加载器
-	protected function init(){
-		
-		$this->registClassMap = array();
-		$this->loadedClassMap = array();
-		$this->preLoad();
-		$this->regist();
-		
-	}
-	
-	// 预加载初始化
-	protected function preLoad(){
-		
-		
-	}
-
 	// 加载器
 	protected function load($className){
-				
+	
 		if(isset($this->loadedClassMap[$className]))
 			return $this->loadedClassMap[$className];
 		
 		if(isset($this->registClassMap[$className])){
 			
 			require($this->registClassMap[$className]);
-			$this->loadedClassMap[$className] = $className;
-			return $className;
+			return $this->loadedClassMap[$className] = $className;
 		}
 		
-		$this->fileScan($this->scanRoot,$className);
+		$finded = false;
+		
+		foreach($this->scanRoot as $scanRoot){
+			$this->fileScan($this->scanRoot,$className,1,$finded);
+			if($finded)
+				break;
+		}
 	}
 	
 	// 加载器注册
-	protected function regist(){
+	protected function splRegist(){
 		
 		spl_autoload_register(array($this,'load'));
 				
@@ -94,7 +88,7 @@ abstract class ClassLoader{
 		
 		$basename = preg_replace('/\.php$/','',basename($currentFileName));
 		$this->registClassMap[$basename] = $currentFileName;				
-		$finded = $basename == $targetFileName;
+		$finded = preg_replace('/\//','\\\\',$basename) == $targetFileName;
 		$finded && $this->load($basename);
 
 	}
