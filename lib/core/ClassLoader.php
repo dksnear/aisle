@@ -9,12 +9,12 @@ abstract class ClassLoader{
 	// 已加载映射表
 	protected $loadedClassMap;
 	
-	// 扫描器根目录
-	protected $scanRoot = array('.');
+	// 根目录配置
+	//root: array[scanroot1,scanroot2,..]
+	protected $root = array('.');
 	
 	protected function __construct(){
 
-		$this->scanRoot = is_array($this->scanRoot) ? $this->scanRoot : array($this->scanRoot);
 		$this->registClassMap = array();
 		$this->loadedClassMap = array();
 		$this->splRegist();
@@ -22,7 +22,24 @@ abstract class ClassLoader{
 	
 	public function __get($name){
 		
-		return isset($this->$name) ? $this->$name : null;
+		return property_exists($this->$name) ? $this->$name : null;
+	}
+	
+	public function SetRoot($root){
+		
+		$this->root = empty($this->root) ? array() : $this->root;
+		
+		foreach($root as $item)
+			$this->root []= $item;
+			
+		return this;
+	}
+	
+	public function AddRoot($item){
+		
+		$this->root = empty($this->root) ? array() : $this->root;
+		$this->root []= $item;
+		return this;
 	}
 
 	// 加载器
@@ -36,14 +53,31 @@ abstract class ClassLoader{
 			require($this->registClassMap[$className]);
 			return $this->loadedClassMap[$className] = $className;
 		}
-		
-		$finded = false;
-		
-		foreach($this->scanRoot as $scanRoot){
+					
+		$this->eachRoot(function($scanRoot,$item){
+			
+			$finded = false;
+			
 			$this->fileScan($this->scanRoot,$className,1,$finded);
+			
 			if($finded)
+				return false;
+		});
+	}
+	
+	protected function eachRoot($fn){
+		
+		if(empty($this->root) || !is_array($this->root) || !is_callable($fn)) 
+			return $this;
+		
+		foreach($this->root as $scan){
+			
+			if($fn($this->trimSlash($scan)) === false)
 				break;
+			
 		}
+		
+		return $this;
 	}
 	
 	// 加载器注册
@@ -91,6 +125,11 @@ abstract class ClassLoader{
 		$finded = preg_replace('/\//','\\\\',$basename) == $targetFileName;
 		$finded && $this->load($basename);
 
+	}
+	
+	protected function trimSlash($dir){
+		
+		return preg_replace('/^\\\\|^\/|\\\\$|\/$/','',$dir);
 	}
 	
 }

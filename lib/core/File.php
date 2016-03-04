@@ -351,6 +351,7 @@ class File implements \JsonSerializable {
 			$out['count'] = $out['count']/2;
 		
 		return $out;	
+		
 	}
 	
 	public static function FixName($path){
