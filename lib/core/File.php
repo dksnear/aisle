@@ -87,42 +87,54 @@ class File implements \JsonSerializable {
 
     }
 
-    public static function Delete($fileName,$simulate=false) {
+    public static function Delete($fileName) {
+		
+		if(is_dir($fileName)){
+			
+			self::Each($fileName,1,function($file) use ($fileName){
+				
+				if($fileName == $file->fullName)
+					return;
+							
+				self::Delete($file->fullName);
+			});
+			
+			return rmdir($fileName);
+		}
 
-		if($simulate)
-			return true;
-	
-        if (!file_exists($fileName))
-            return false;
-
-        if (is_dir($fileName))
-            return rmdir($fileName);
-
-        if (is_file($fileName))
+        if (file_exists($fileName))
             return unlink($fileName);
 
         return false;
 
     }
 	
-	public static function Copy($src,$dest,$isdir=false,$simulate=false){
+	public static function Copy($src,$dest,$filter=null,$force=true){
 		
-		if($simulate)
-			return true;
-		
-		if($isdir){
-		
-			if(!is_dir($src))
-				return false;
+		if(is_dir($src)){
 			
 			$succeed = false;
+			$favailable = is_callable($filter);
 		
-			self::Each($src,-1,function($srcFile) use($src,$dest){
+			self::Each($src,-1,function($srcFile) use($src,$dest,$filter,$force,$favailable,&$succeed){
 				
 				if($srcFile->type == self::$FILETYPE['DIRECTORY'])
 					return;
+				
+				$rp = str_replace($src,'',$srcFile->fullName);
+				$src = $srcFile->fullName;
+				$dest = $dest.$rp;
+				
+				if($favailable){
+					
+					$ret = $filter($rp,$src,$dest);
+					if($ret === false)
+						return false;
+					if(!$ret)
+						return;
+				} 
 	
-				$succeed = self::Copy($srcFile->fullName,$dest.str_replace($src,'',$srcFile));
+				$succeed = self::Copy($src,$dest,$filter,$force);
 				
 				if(!$succeed) return false;
 				
@@ -135,6 +147,9 @@ class File implements \JsonSerializable {
 		if(!file_exists($src))
 			return false;
 		
+		if(!$force && file_exists($dest))
+			return false;
+		
 		$dir = dirname($dest);
 		
 		if(!is_dir($dir)){
@@ -144,6 +159,61 @@ class File implements \JsonSerializable {
 		}
 		
 		return copy($src,$dest);
+	}
+	
+	public static function Move($src,$dest,$filter=null,$force=true){
+		
+		if(is_dir($src)){
+			
+			$succeed = false;
+			$favailable = is_callable($filter);
+		
+			self::Each($src,-1,function($srcFile) use($src,$dest,$filter,$force,$favailable,& $succeed){
+				
+				if($srcFile->type == self::$FILETYPE['DIRECTORY'])
+					return;
+	
+				$rp = str_replace($src,'',$srcFile->fullName);
+				$src = $srcFile->fullName;
+				$dest = $dest.$rp;
+				
+				if($favailable){
+					
+					$ret = $filter($rp,$src,$dest);
+					if($ret === false)
+						return false;
+					if(!$ret)
+						return;
+				} 
+	
+				$succeed = self::Move($src,$dest,$filter,$force);
+				
+				if(!$succeed) return false;
+				
+			});
+			
+			if($favailable)
+				return $succeed;
+			
+			return self::Delete($src) && $succeed;
+		}
+		
+		
+		if(!file_exists($src))
+			return false;
+		
+		if(!$force && file_exists($dest))
+			return false;
+		
+		$dir = dirname($dest);
+		
+		if(!is_dir($dir)){
+			
+			if(!mkdir($dir,0777,true))
+				return false;
+		}
+		
+		return rename($src,$dest);
 	}
 	
     // 遍历当前文件下的所有文件
@@ -167,6 +237,7 @@ class File implements \JsonSerializable {
         return $files;
     }
 	
+	// !untested
 	// 同步2个目录中的差异文件
 	// @src 源目录
 	// @dest 目标目录
@@ -177,7 +248,6 @@ class File implements \JsonSerializable {
 	//        64:模拟文件操作 不影响实际文件系统	
 	// #return false | array('count'=>'被修改的文件数目','rpath'=>'被修改文件的相对路径列表','files'=>'被修改的文件集合')
 	// -1(减持) 0(失败) 1(同步) 2(增持)
-	
 	public static function Sync2($src,$dest,$filters=array(),$flags=0){
 		
 		$src = self::FixName($src);
@@ -287,6 +357,7 @@ class File implements \JsonSerializable {
 		
 	}
 	
+	// !untested
 	// 同步多个目录中的差异文件
 	public static function Sync($dirs,$filters=array(),$flags=0){
 		
@@ -411,7 +482,7 @@ class File implements \JsonSerializable {
 
     }
 
-    public function ReadFile() {
+    public function FileRead() {
 
         // throw
         if ($this->type != self::$FILETYPE['FILE'])
@@ -421,7 +492,7 @@ class File implements \JsonSerializable {
 
     }
 
-    public function WriteFile($data,$mode='w') {
+    public function FileWrite($data,$mode='w') {
 
         if ($this->type != self::$FILETYPE['FILE'])
             return false;
@@ -430,11 +501,21 @@ class File implements \JsonSerializable {
 
     }
 
-    public function DeleteFile() {
+    public function FileDelete() {
 
         return self::Delete($this->fullName);
 
     }
+	
+	public function FileCopy($dest,$filter=null,$force=true){
+		
+		return self::Copy($this->fullName,$dest,$filter,$force);
+	}
+	
+	public function FileMove($dest,$filter=null,$force=true){
+		
+		return self::Move($this->fullName,$dest,$filter,$force)
+	}
 
     // 读取目录
     // @file 目标文件对象
