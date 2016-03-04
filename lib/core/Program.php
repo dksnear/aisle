@@ -34,41 +34,30 @@ class Program extends NSClassLoader{
 		
 	}
 	
-	public static function Build($class=null,$regName=null,$pclsMap=null,$trace=false){
+	public static function Build($class=null,$regName=null){
 		
 		if(!empty(self::$inst))
 			return self::$inst;
 	
-		self::$inst = !$class ? new self($pclsMap,$trace) : new $class($pclsMap,$trace);		
+		self::$inst = !$class ? new self() : new $class();		
 		return self::GlobalRegist($regName);
 	}
 	
-	public static function BuildWithTrace($class=null,$regName=null,$pclsMap=null){
-		
-		return self::Build($class,$regName,$pclsMap,true);
-	}
-	
-	public static function BuildWithPreLoad($pclsMap=null,$class=null,$regName=null,$trace=false){
-		
-		return self::Build($class,$regName,$pclsMap,$trace);
-	}
 	
 	protected static $inst;
 	
 	protected $managers;
 	
-	protected $scanRoot = array('../../lib','../..');
-	
 	protected $trace = false;
 	
-	protected function __construct($pclsMap=null,$trace=false){
+	//根目录配置
+	//root:array(items) items:array('ns'=>nsRoot,'scans'=>scanRoots) nsRoot:string nsroot, scanRoots:array[scanroot1,scanroot2,..]
+	protected $root = array(array('ns'=>'aisle','scans'=>array('../../lib','../..')));
+	
+	protected function __construct(){
 		
-		parent::__construct($pclsMap);
-		$this->trace = $trace;
-		if($this->trace)
-			Trace::Begin('aisle program');
+		parent::__construct();
 		$this->buildManagers();
-		
 	}
 	
 	public function __get($name){
@@ -83,15 +72,23 @@ class Program extends NSClassLoader{
 			
 	public function Run(){
 		
-		// var_dump($_REQUEST);
-		// $this->confm && var_dump($this->confm->Statements());
+		$this->exm->SetTrace($this->trace);
+		
+		if($this->trace)
+			Trace::Begin('aisle run');
 		
 		$this->viewm->Render(Router::Resolve($this->confm->Config()->GetRouters(),$this->managers));
 		
 		if($this->trace)
 			Trace::Eject();
 		
+	}
+	
+	public function SetTrace($trace=true){
 		
+		$this->trace = $trace;
+		
+		return $this;
 	}
 	
 	protected function buildManagers(){
@@ -113,13 +110,16 @@ class Program extends NSClassLoader{
 	protected function createConfigManager(){
 		
 		$paths = array();
-		
-		foreach($this->scanRoot as $scanRoot){
+
+		$this->eachRoot(function($scanRoot) use(& $paths){
 			
-			if(!file_exists($scanRoot.'/$source/config.acj'))
-				continue;
-			$paths []= $scanRoot.'/$source/config.acj';
-		}
+			if(file_exists($scanRoot.'/$source/config.acj')){
+				
+				$paths []= $scanRoot.'/$source/config.acj';
+				return false;
+			}
+			
+		});
 		
 		if(file_exists('./$source/config.acj'))
 			$paths []= './$source/config.acj';
@@ -151,7 +151,7 @@ class Program extends NSClassLoader{
 	
 	protected function createExceptionManager(){
 		
-		return new ExceptionManager($this->logm,$this->viewm,$this);
+		return new ExceptionManager($this->logm,$this->viewm);
 	}
 		
 }
